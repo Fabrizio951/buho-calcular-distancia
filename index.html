@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Calculadora de Distancias</title>
+</head>
+<body>
+     <!-- /////////////////////Esto es parte del mapa-->
+    <head>
+        <style>
+           /* Set the size of the div element that contains the map */
+          #map {
+            height: 400px;
+            width: 600px;
+           }
+        </style>
+      </head>
+       <!-- /////////////////Esto es parte del mapa-->
+    <div class="container">
+        <div class="input-section">
+            <h2>Ingrese los puntos de partida y llegada:</h2>
+            <label for="startPoint">Punto de Partida:</label>
+            <input type="text" id="startPoint" placeholder="Ingrese punto de partida">
+
+            <label for="endPoint">Punto de Llegada:</label>
+            <input type="text" id="endPoint" placeholder="Ingrese punto de llegada">
+
+            <button>Calcular Distancia</button>
+        </div>
+
+        <div class="options-section">
+            <h2>Opciones de Servicio:</h2>
+            <div class="service-option" id="economicOption">
+                <h3>Económico</h3>
+                <p>Precio por metro: S/ 0.5</p>
+                <button>Seleccionar Económico</button>
+            </div>
+
+            <div class="service-option" id="executiveOption">
+                <h3>Executive</h3>
+                <p>Precio por metro: S/ 1.5</p>
+                <button>Seleccionar Executive</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- /////////////////////Esto es parte del mapa-->
+    <!--The div elements for the map and message -->
+    <div id="map"></div>
+    <div id="msg"></div>
+
+    <script>
+        // Initialize and add the map
+        var map;
+        function initMap() {
+            // The map, centered on Central Park
+            const center = {lat: 40.774102, lng: -73.971734};
+            const options = {zoom: 15, scaleControl: true, center: center};
+            map = new google.maps.Map(
+                document.getElementById('map'), options);
+            // Locations of landmarks
+            const dakota = {lat: 40.7767644, lng: -73.9761399};
+            const frick = {lat: 40.771209, lng: -73.9673991};
+            // The markers for The Dakota and The Frick Collection
+            var mk1 = new google.maps.Marker({position: dakota, map: map});
+            var mk2 = new google.maps.Marker({position: frick, map: map});
+          
+            //Ruta
+            let directionsService = new google.maps.DirectionsService();
+            let directionsRenderer = new google.maps.DirectionsRenderer();
+            directionsRenderer.setMap(map); // Existing map object displays directions
+            // Create route from existing points used for markers
+            const route = {
+                origin: dakota,
+                destination: frick,
+                travelMode: 'DRIVING'
+            }
+
+            directionsService.route(route,
+                function(response, status) { // anonymous function to capture directions
+                if (status !== 'OK') {
+                    window.alert('Directions request failed due to ' + status);
+                    return;
+                } 
+                else {
+                    directionsRenderer.setDirections(response); // Add route to the map
+                    var directionsData = response.routes[0].legs[0]; // Get data about the mapped route
+                    if (!directionsData) {
+                    window.alert('Directions request failed');
+                    return;
+                    }
+                    else {
+                        document.getElementById('msg').innerHTML += " Distancia de viaje es: " + (parseFloat(directionsData.distance.text.replace(" mi", "")) * 1.60934).toFixed(2) + " km (" + directionsData.duration.text + ").";
+                    }
+                }
+                });
+
+        }
+    </script>
+        <!--Load the API from the specified URL -- remember to replace YOUR_API_KEY-->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDjBzxn3jznfGTnyAJMby0fd13G5OMFAvY&callback=initMap">
+    </script>
+
+    <!-- /////////////////////Esto es parte del mapa-->
+    
+</body>
+</html>
