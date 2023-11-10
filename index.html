@@ -7,17 +7,7 @@
     <title>Calculadora de Distancias</title>
 </head>
 <body>
-     <!-- /////////////////////Esto es parte del mapa-->
-    <head>
-        <style>
-           /* Set the size of the div element that contains the map */
-          #map {
-            height: 400px;
-            width: 600px;
-           }
-        </style>
-      </head>
-       <!-- /////////////////Esto es parte del mapa-->
+
     <div class="container">
         <div class="input-section">
             <h2>Ingrese los puntos de partida y llegada:</h2>
@@ -27,7 +17,7 @@
             <label for="endPoint">Punto de Llegada:</label>
             <input type="text" id="endPoint" placeholder="Ingrese punto de llegada">
 
-            <button>Calcular Distancia</button>
+            <button onclick="calcularDistancia()">Calcular Distancia</button>
         </div>
 
         <div class="options-section">
@@ -35,76 +25,94 @@
             <div class="service-option" id="economicOption">
                 <h3>Económico</h3>
                 <p>Precio por metro: S/ 0.5</p>
+                <p>Total: <span id="economicTotal">0.00</span></p>
                 <button>Seleccionar Económico</button>
             </div>
 
             <div class="service-option" id="executiveOption">
                 <h3>Executive</h3>
                 <p>Precio por metro: S/ 1.5</p>
+                <p>Total: <span id="executiveTotal">0.00</span></p>
                 <button>Seleccionar Executive</button>
             </div>
         </div>
     </div>
 
-    <!-- /////////////////////Esto es parte del mapa-->
-    <!--The div elements for the map and message -->
-    <div id="map"></div>
-    <div id="msg"></div>
-
     <script>
-        // Initialize and add the map
-        var map;
-        function initMap() {
-            // The map, centered on Central Park
-            const center = {lat: 40.774102, lng: -73.971734};
-            const options = {zoom: 15, scaleControl: true, center: center};
-            map = new google.maps.Map(
-                document.getElementById('map'), options);
-            // Locations of landmarks
-            const dakota = {lat: 40.7767644, lng: -73.9761399};
-            const frick = {lat: 40.771209, lng: -73.9673991};
-            // The markers for The Dakota and The Frick Collection
-            var mk1 = new google.maps.Marker({position: dakota, map: map});
-            var mk2 = new google.maps.Marker({position: frick, map: map});
-          
-            //Ruta
-            let directionsService = new google.maps.DirectionsService();
-            let directionsRenderer = new google.maps.DirectionsRenderer();
-            directionsRenderer.setMap(map); // Existing map object displays directions
-            // Create route from existing points used for markers
-            const route = {
-                origin: dakota,
-                destination: frick,
-                travelMode: 'DRIVING'
-            }
-
-            directionsService.route(route,
-                function(response, status) { // anonymous function to capture directions
-                if (status !== 'OK') {
-                    window.alert('Directions request failed due to ' + status);
-                    return;
-                } 
-                else {
-                    directionsRenderer.setDirections(response); // Add route to the map
-                    var directionsData = response.routes[0].legs[0]; // Get data about the mapped route
-                    if (!directionsData) {
-                    window.alert('Directions request failed');
-                    return;
-                    }
-                    else {
-                        document.getElementById('msg').innerHTML += " Distancia de viaje es: " + (parseFloat(directionsData.distance.text.replace(" mi", "")) * 1.60934).toFixed(2) + " km (" + directionsData.duration.text + ").";
-                    }
+        function geocodeAddress(address, callback) {
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ 'address': address }, function (results, status) {
+                if (status === 'OK') {
+                    var coordinates = {
+                        lat: results[0].geometry.location.lat(),
+                        lng: results[0].geometry.location.lng()
+                    };
+                    callback(coordinates);
+                } else {
+                    window.alert('Geocode was not successful for the following reason: ' + status);
                 }
-                });
-
+            });
         }
     </script>
-        <!--Load the API from the specified URL -- remember to replace YOUR_API_KEY-->
+
+    <script>
+        function calcularDistancia() {
+            // Obtener las ubicaciones a partir de las direcciones ingresadas por el usuario
+            var startAddress = document.getElementById('startPoint').value;
+            var endAddress = document.getElementById('endPoint').value;
+
+            // Convertir direcciones en coordenadas
+            geocodeAddress(startAddress, function(partida) {
+                geocodeAddress(endAddress, function(llegada) {
+                    // Ahora tienes las coordenadas de partida y llegada, puedes continuar con el cálculo de distancia
+                    // y la actualización de precios.
+                    console.log("Coordenadas de Partida:", partida);
+                    console.log("Coordenadas de Llegada:", llegada);
+
+                    //Ruta
+                    let directionsService = new google.maps.DirectionsService();
+                    let directionsRenderer = new google.maps.DirectionsRenderer();
+
+                    // Create route from existing points used for markers
+                    const route = {
+                        origin: partida,
+                        destination: llegada,
+                        travelMode: 'DRIVING'
+                    }
+
+                    directionsService.route(route, function(response, status) {
+                        // anonymous function to capture directions
+                        if (status !== 'OK') {
+                            window.alert('Directions request failed due to ' + status);
+                            return;
+                        } else {
+                            directionsRenderer.setDirections(response); // Add route to the map
+                            var directionsData = response.routes[0].legs[0]; // Get data about the mapped route
+                            if (!directionsData) {
+                                window.alert('Directions request failed');
+                                return;
+                            } else {
+                                // Supongamos que la distancia se almacena en la variable 'distanciaEnKm'
+                                var distanciaEnKm = parseFloat(directionsData.distance.text.replace(" mi", "")) * 1.60934;
+
+                                // Actualizar el precio en función de la distancia
+                                var precioEconomico = distanciaEnKm * 0.5;
+                                var precioExecutive = distanciaEnKm * 1.5;
+
+                                // Actualizar los elementos HTML con los nuevos precios
+                                document.getElementById('economicTotal').innerText = precioEconomico.toFixed(2);
+                                document.getElementById('executiveTotal').innerText = precioExecutive.toFixed(2);
+                            }
+                        }
+                    });
+                });
+            });
+        }
+    </script>
+    <!--API KEY GOOGLE MAPS-->
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDjBzxn3jznfGTnyAJMby0fd13G5OMFAvY&callback=initMap">
     </script>
-
-    <!-- /////////////////////Esto es parte del mapa-->
     
 </body>
 </html>
