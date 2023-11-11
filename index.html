@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Calculadora de Distancias</title>
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+
+
+    node_modules\jquery\dist
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="ocultar">
         <div class="input-section">
             <h2>Ingrese los puntos de partida y llegada:</h2>
             <label for="startPoint">Punto de Partida:</label>
@@ -26,19 +30,71 @@
                 <h3>Económico</h3>
                 <p>Precio por metro: S/ 0.5</p>
                 <p>Total: <span id="economicTotal">0.00</span></p>
-                <button>Seleccionar Económico</button>
+                <button type="button" onclick="hacerFormulario()">Seleccionar Económico</button>
             </div>
 
             <div class="service-option" id="executiveOption">
                 <h3>Executive</h3>
                 <p>Precio por metro: S/ 1.5</p>
                 <p>Total: <span id="executiveTotal">0.00</span></p>
-                <button>Seleccionar Executive</button>
+                <button type="button" onclick="hacerFormulario()">Seleccionar Executive</button>
             </div>
         </div>
     </div>
 
+     <!-- Formulario -->
+     <div id="formulario" class="container" style="display: none;">
+        <h2>Formulario</h2>
+        <form>
+
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+
+            <label for="correo">Correo:</label>
+            <input type="email" id="correo" name="correo" required>
+
+            <label for="telefono">Teléfono:</label>
+            <input type="tel" id="telefono" name="telefono" required>
+
+            <button type="button" onclick="aceptarFormulario()">Aceptar</button>
+        </form>
+    </div>  
+    <script>    
+        function enviarMensajeWhatsApp() {
+            // Realiza una llamada AJAX al archivo PHP
+            $.ajax({
+                type: 'POST',
+                url: 'enviar_whatsapp.php',
+                data: {
+                    // Puedes pasar datos adicionales si es necesario
+                },
+                success: function(response) {
+                    // Maneja la respuesta (puede mostrar un mensaje de éxito o manejar errores)
+                    console.log(response);
+                },
+                error: function(error) {
+                    // Maneja cualquier error en la llamada AJAX
+                    console.error('Error:', error);
+                }
+            });
+        }
+        
+        function ocultarMostrar() {
+            document.getElementById('ocultar').style.display = 'none';
+            document.getElementById('formulario').style.display = 'block';
+        }
+
+        function hacerFormulario() {
+            ocultarMostrar();
+        }
+
+        function aceptarFormulario(){
+            alert('Formulario aceptado');
+        }
+
+    </script>
     <script>
+        //Función para obtener coordenadas del inicio y final 
         function geocodeAddress(address, callback) {
             var geocoder = new google.maps.Geocoder();
             geocoder.geocode({ 'address': address }, function (results, status) {
